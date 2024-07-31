@@ -1,0 +1,12 @@
+project: echoserver
+configVersion: 1
+cleanup:
+  keepPolicies:
+    - references:
+        branch: /.*/
+        limit:
+          in: 168h # keep dev images build during last week which not main
+    - references:
+        branch: /main/
+      imagesPerReference:
+        last: 5 # keep 5 images for branches main
