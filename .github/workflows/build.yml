@@ -3,7 +3,7 @@ name: Build
 on: [push]
 
 env:
-  CI_COMMIT_REF_NAME: ${{ github.ref_name }}
+  MODULES_MODULE_TAG: ${{ github.ref_name }}
 
 jobs:
   build:
