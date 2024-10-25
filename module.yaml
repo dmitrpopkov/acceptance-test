@@ -1,0 +1,6 @@
+name: acceptance-test
+stage: PMI
+weight: 960
+description: |
+  For PMI
+tags: ["acceptance"]
