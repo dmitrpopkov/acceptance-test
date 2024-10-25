@@ -1,4 +1,4 @@
-# Deckhouse Kubernetes Platform module template
+# Deckhouse Kubernetes Platform module for Acceptance Tests
 
 This repository is a template for building a module for [Deckhouse Kubernetes Platform](https://github.com/deckhouse/deckhouse). It uses GitHub Actions workflows and GitHub Packages for building and deploying modules for the Deckhouse Kubernetes Platform.
 
