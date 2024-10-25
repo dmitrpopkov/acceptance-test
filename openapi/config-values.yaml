@@ -1,155 +1,1112 @@
-$schema: http://json-schema.org/schema#
+"$schema": https://json-schema.org/draft/2019-09/schema
+"$id": http://example.com/example.json
 type: object
+default: {}
+title: Root Schema
+required:
+- replicaCount
+- logLevel
+- host
+- backend
+- backends
+- image
+- ui
+- faults
+- service
+- h2c
+- config
+- extraArgs
+- tls
+- certificate
+- hpa
+- cache
+- redis
+- serviceAccount
+- securityContext
+- ingress
+- linkerd
+- serviceMonitor
+- resources
+- extraEnvs
+- nodeSelector
+- tolerations
+- affinity
+- podAnnotations
+- topologySpreadConstraints
+- podDisruptionBudget
+- probes
 properties:
-  affinity:
-    type: object
-  autoscaling:
-    type: object
-    properties:
-      enabled:
-        type: boolean
-      maxReplicas:
-        type: integer
-      minReplicas:
-        type: integer
-      targetCPUUtilizationPercentage:
-        type: integer
-      targetMemoryUtilizationPercentage:
-        type: integer
-  fullnameOverride:
+  replicaCount:
+    type: integer
+    default: 0
+    title: The replicaCount Schema
+    examples:
+    - 1
+  logLevel:
     type: string
+    default: ''
+    title: The logLevel Schema
+    examples:
+    - info
+  host:
+    type: 'null'
+    default: 
+    title: The host Schema
+    examples:
+    - 
+  backend:
+    type: 'null'
+    default: 
+    title: The backend Schema
+    examples:
+    - 
+  backends:
+    type: array
+    default: []
+    title: The backends Schema
+    items: {}
+    examples:
+    - []
   image:
     type: object
+    default: {}
+    title: The image Schema
+    required:
+    - repository
+    - tag
+    - pullPolicy
     properties:
-      pullPolicy:
-        type: string
-      registry:
-        type: string
       repository:
         type: string
+        default: ''
+        title: The repository Schema
+        examples:
+        - ghcr.io/stefanprodan/podinfo
       tag:
         type: string
-  imagePullSecrets:
-    type: array
-  ingress:
-    type: object
-    properties:
-      annotations:
-        type: object
-      className:
+        default: ''
+        title: The tag Schema
+        examples:
+        - 6.7.1
+      pullPolicy:
         type: string
+        default: ''
+        title: The pullPolicy Schema
+        examples:
+        - IfNotPresent
+    examples:
+    - repository: ghcr.io/stefanprodan/podinfo
+      tag: 6.7.1
+      pullPolicy: IfNotPresent
+  ui:
+    type: object
+    default: {}
+    title: The ui Schema
+    required:
+    - color
+    - message
+    - logo
+    properties:
+      color:
+        type: string
+        default: ''
+        title: The color Schema
+        examples:
+        - "#34577c"
+      message:
+        type: string
+        default: ''
+        title: The message Schema
+        examples:
+        - ''
+      logo:
+        type: string
+        default: ''
+        title: The logo Schema
+        examples:
+        - ''
+    examples:
+    - color: "#34577c"
+      message: ''
+      logo: ''
+  faults:
+    type: object
+    default: {}
+    title: The faults Schema
+    required:
+    - delay
+    - error
+    - unhealthy
+    - unready
+    - testFail
+    - testTimeout
+    properties:
+      delay:
+        type: boolean
+        default: false
+        title: The delay Schema
+        examples:
+        - false
+      error:
+        type: boolean
+        default: false
+        title: The error Schema
+        examples:
+        - false
+      unhealthy:
+        type: boolean
+        default: false
+        title: The unhealthy Schema
+        examples:
+        - false
+      unready:
+        type: boolean
+        default: false
+        title: The unready Schema
+        examples:
+        - false
+      testFail:
+        type: boolean
+        default: false
+        title: The testFail Schema
+        examples:
+        - false
+      testTimeout:
+        type: boolean
+        default: false
+        title: The testTimeout Schema
+        examples:
+        - false
+    examples:
+    - delay: false
+      error: false
+      unhealthy: false
+      unready: false
+      testFail: false
+      testTimeout: false
+  service:
+    type: object
+    default: {}
+    title: The service Schema
+    required:
+    - enabled
+    - annotations
+    - type
+    - metricsPort
+    - httpPort
+    - externalPort
+    - grpcPort
+    - grpcService
+    - nodePort
+    - hostPort
+    properties:
       enabled:
         type: boolean
+        default: false
+        title: The enabled Schema
+        examples:
+        - true
+      annotations:
+        type: object
+        default: {}
+        title: The annotations Schema
+        required: []
+        properties: {}
+        examples:
+        - {}
+      type:
+        type: string
+        default: ''
+        title: The type Schema
+        examples:
+        - ClusterIP
+      metricsPort:
+        type: integer
+        default: 0
+        title: The metricsPort Schema
+        examples:
+        - 9797
+      httpPort:
+        type: integer
+        default: 0
+        title: The httpPort Schema
+        examples:
+        - 9898
+      externalPort:
+        type: integer
+        default: 0
+        title: The externalPort Schema
+        examples:
+        - 9898
+      grpcPort:
+        type: integer
+        default: 0
+        title: The grpcPort Schema
+        examples:
+        - 9999
+      grpcService:
+        type: string
+        default: ''
+        title: The grpcService Schema
+        examples:
+        - podinfo
+      nodePort:
+        type: integer
+        default: 0
+        title: The nodePort Schema
+        examples:
+        - 31198
+      hostPort:
+        type: 'null'
+        default: 
+        title: The hostPort Schema
+        examples:
+        - 
+    examples:
+    - enabled: true
+      annotations: {}
+      type: ClusterIP
+      metricsPort: 9797
+      httpPort: 9898
+      externalPort: 9898
+      grpcPort: 9999
+      grpcService: podinfo
+      nodePort: 31198
+      hostPort: 
+  h2c:
+    type: object
+    default: {}
+    title: The h2c Schema
+    required:
+    - enabled
+    properties:
+      enabled:
+        type: boolean
+        default: false
+        title: The enabled Schema
+        examples:
+        - false
+    examples:
+    - enabled: false
+  config:
+    type: object
+    default: {}
+    title: The config Schema
+    required:
+    - path
+    - name
+    properties:
+      path:
+        type: string
+        default: ''
+        title: The path Schema
+        examples:
+        - ''
+      name:
+        type: string
+        default: ''
+        title: The name Schema
+        examples:
+        - ''
+    examples:
+    - path: ''
+      name: ''
+  extraArgs:
+    type: array
+    default: []
+    title: The extraArgs Schema
+    items: {}
+    examples:
+    - []
+  tls:
+    type: object
+    default: {}
+    title: The tls Schema
+    required:
+    - enabled
+    - secretName
+    - certPath
+    - port
+    - hostPort
+    properties:
+      enabled:
+        type: boolean
+        default: false
+        title: The enabled Schema
+        examples:
+        - false
+      secretName:
+        type: 'null'
+        default: 
+        title: The secretName Schema
+        examples:
+        - 
+      certPath:
+        type: string
+        default: ''
+        title: The certPath Schema
+        examples:
+        - "/data/cert"
+      port:
+        type: integer
+        default: 0
+        title: The port Schema
+        examples:
+        - 9899
+      hostPort:
+        type: 'null'
+        default: 
+        title: The hostPort Schema
+        examples:
+        - 
+    examples:
+    - enabled: false
+      secretName: 
+      certPath: "/data/cert"
+      port: 9899
+      hostPort: 
+  certificate:
+    type: object
+    default: {}
+    title: The certificate Schema
+    required:
+    - create
+    - issuerRef
+    - dnsNames
+    properties:
+      create:
+        type: boolean
+        default: false
+        title: The create Schema
+        examples:
+        - false
+      issuerRef:
+        type: object
+        default: {}
+        title: The issuerRef Schema
+        required:
+        - kind
+        - name
+        properties:
+          kind:
+            type: string
+            default: ''
+            title: The kind Schema
+            examples:
+            - ClusterIssuer
+          name:
+            type: string
+            default: ''
+            title: The name Schema
+            examples:
+            - self-signed
+        examples:
+        - kind: ClusterIssuer
+          name: self-signed
+      dnsNames:
+        type: array
+        default: []
+        title: The dnsNames Schema
+        items:
+          type: string
+          default: ''
+          title: A Schema
+          examples:
+          - podinfo
+        examples:
+        - - podinfo
+    examples:
+    - create: false
+      issuerRef:
+        kind: ClusterIssuer
+        name: self-signed
+      dnsNames:
+      - podinfo
+  hpa:
+    type: object
+    default: {}
+    title: The hpa Schema
+    required:
+    - enabled
+    - maxReplicas
+    - cpu
+    - memory
+    - requests
+    properties:
+      enabled:
+        type: boolean
+        default: false
+        title: The enabled Schema
+        examples:
+        - false
+      maxReplicas:
+        type: integer
+        default: 0
+        title: The maxReplicas Schema
+        examples:
+        - 10
+      cpu:
+        type: 'null'
+        default: 
+        title: The cpu Schema
+        examples:
+        - 
+      memory:
+        type: 'null'
+        default: 
+        title: The memory Schema
+        examples:
+        - 
+      requests:
+        type: 'null'
+        default: 
+        title: The requests Schema
+        examples:
+        - 
+    examples:
+    - enabled: false
+      maxReplicas: 10
+      cpu: 
+      memory: 
+      requests: 
+  cache:
+    type: string
+    default: ''
+    title: The cache Schema
+    examples:
+    - ''
+  redis:
+    type: object
+    default: {}
+    title: The redis Schema
+    required:
+    - enabled
+    - repository
+    - tag
+    properties:
+      enabled:
+        type: boolean
+        default: false
+        title: The enabled Schema
+        examples:
+        - false
+      repository:
+        type: string
+        default: ''
+        title: The repository Schema
+        examples:
+        - redis
+      tag:
+        type: string
+        default: ''
+        title: The tag Schema
+        examples:
+        - 7.0.7
+    examples:
+    - enabled: false
+      repository: redis
+      tag: 7.0.7
+  serviceAccount:
+    type: object
+    default: {}
+    title: The serviceAccount Schema
+    required:
+    - enabled
+    - name
+    - imagePullSecrets
+    properties:
+      enabled:
+        type: boolean
+        default: false
+        title: The enabled Schema
+        examples:
+        - false
+      name:
+        type: 'null'
+        default: 
+        title: The name Schema
+        examples:
+        - 
+      imagePullSecrets:
+        type: array
+        default: []
+        title: The imagePullSecrets Schema
+        items: {}
+        examples:
+        - []
+    examples:
+    - enabled: false
+      name: 
+      imagePullSecrets: []
+  securityContext:
+    type: object
+    default: {}
+    title: The securityContext Schema
+    required: []
+    properties: {}
+    examples:
+    - {}
+  ingress:
+    type: object
+    default: {}
+    title: The ingress Schema
+    required:
+    - enabled
+    - className
+    - additionalLabels
+    - annotations
+    - hosts
+    - tls
+    properties:
+      enabled:
+        type: boolean
+        default: false
+        title: The enabled Schema
+        examples:
+        - false
+      className:
+        type: string
+        default: ''
+        title: The className Schema
+        examples:
+        - ''
+      additionalLabels:
+        type: object
+        default: {}
+        title: The additionalLabels Schema
+        required: []
+        properties: {}
+        examples:
+        - {}
+      annotations:
+        type: object
+        default: {}
+        title: The annotations Schema
+        required: []
+        properties: {}
+        examples:
+        - {}
       hosts:
         type: array
+        default: []
+        title: The hosts Schema
         items:
           type: object
+          default: {}
+          title: A Schema
+          required:
+          - host
+          - paths
           properties:
             host:
               type: string
+              default: ''
+              title: The host Schema
+              examples:
+              - podinfo.local
             paths:
               type: array
+              default: []
+              title: The paths Schema
               items:
                 type: object
+                default: {}
+                title: A Schema
+                required:
+                - path
+                - pathType
                 properties:
                   path:
                     type: string
+                    default: ''
+                    title: The path Schema
+                    examples:
+                    - "/"
                   pathType:
                     type: string
+                    default: ''
+                    title: The pathType Schema
+                    examples:
+                    - ImplementationSpecific
+                examples:
+                - path: "/"
+                  pathType: ImplementationSpecific
+              examples:
+              - - path: "/"
+                  pathType: ImplementationSpecific
+          examples:
+          - host: podinfo.local
+            paths:
+            - path: "/"
+              pathType: ImplementationSpecific
+        examples:
+        - - host: podinfo.local
+            paths:
+            - path: "/"
+              pathType: ImplementationSpecific
       tls:
         type: array
-        items:
-          type: object
-          properties:
-            hosts:
-              type: array
-              items:
-                type: string
-            secretName:
-              type: string
-  nameOverride:
-    type: string
-  nodeSelector:
+        default: []
+        title: The tls Schema
+        items: {}
+        examples:
+        - []
+    examples:
+    - enabled: false
+      className: ''
+      additionalLabels: {}
+      annotations: {}
+      hosts:
+      - host: podinfo.local
+        paths:
+        - path: "/"
+          pathType: ImplementationSpecific
+      tls: []
+  linkerd:
     type: object
-  podAnnotations:
+    default: {}
+    title: The linkerd Schema
+    required:
+    - profile
+    properties:
+      profile:
+        type: object
+        default: {}
+        title: The profile Schema
+        required:
+        - enabled
+        properties:
+          enabled:
+            type: boolean
+            default: false
+            title: The enabled Schema
+            examples:
+            - false
+        examples:
+        - enabled: false
+    examples:
+    - profile:
+        enabled: false
+  serviceMonitor:
     type: object
-  podDisruptionBudget:
-    type: object
+    default: {}
+    title: The serviceMonitor Schema
+    required:
+    - enabled
+    - interval
+    - additionalLabels
     properties:
       enabled:
         type: boolean
-      maxUnavailable:
-        type: integer
-      minAvailable:
-        type: integer
-  podSecurityContext:
-    type: object
-  replicaCount:
-    type: integer
+        default: false
+        title: The enabled Schema
+        examples:
+        - false
+      interval:
+        type: string
+        default: ''
+        title: The interval Schema
+        examples:
+        - 15s
+      additionalLabels:
+        type: object
+        default: {}
+        title: The additionalLabels Schema
+        required: []
+        properties: {}
+        examples:
+        - {}
+    examples:
+    - enabled: false
+      interval: 15s
+      additionalLabels: {}
   resources:
     type: object
+    default: {}
+    title: The resources Schema
+    required:
+    - limits
+    - requests
     properties:
       limits:
-        type: object
-        properties:
-          cpu:
-            type: string
-          memory:
-            type: string
+        type: 'null'
+        default: 
+        title: The limits Schema
+        examples:
+        - 
       requests:
         type: object
+        default: {}
+        title: The requests Schema
+        required:
+        - cpu
+        - memory
         properties:
           cpu:
             type: string
+            default: ''
+            title: The cpu Schema
+            examples:
+            - 1m
           memory:
             type: string
-  securityContext:
+            default: ''
+            title: The memory Schema
+            examples:
+            - 16Mi
+        examples:
+        - cpu: 1m
+          memory: 16Mi
+    examples:
+    - limits: 
+      requests:
+        cpu: 1m
+        memory: 16Mi
+  extraEnvs:
+    type: array
+    default: []
+    title: The extraEnvs Schema
+    items: {}
+    examples:
+    - []
+  nodeSelector:
     type: object
-    properties:
-      readOnlyRootFilesystem:
-        type: boolean
-      runAsNonRoot:
-        type: boolean
-      runAsUser:
-        type: integer
-      seccompProfile:
-        type: object
-        properties:
-          type:
-            type: string
-  service:
-    type: object
-    properties:
-      annotations:
-        type: object
-      labels:
-        type: object
-      port:
-        type: integer
-      type:
-        type: string
-  serviceAccount:
-    type: object
-    properties:
-      annotations:
-        type: object
-      create:
-        type: boolean
-      name:
-        type: string
-  strategy:
-    type: object
-    properties:
-      rollingUpdate:
-        type: object
-        properties:
-          maxSurge:
-            type: integer
-          maxUnavailable:
-            type: integer
-      type:
-        type: string
+    default: {}
+    title: The nodeSelector Schema
+    required: []
+    properties: {}
+    examples:
+    - {}
   tolerations:
     type: array
+    default: []
+    title: The tolerations Schema
+    items: {}
+    examples:
+    - []
+  affinity:
+    type: object
+    default: {}
+    title: The affinity Schema
+    required: []
+    properties: {}
+    examples:
+    - {}
+  podAnnotations:
+    type: object
+    default: {}
+    title: The podAnnotations Schema
+    required: []
+    properties: {}
+    examples:
+    - {}
   topologySpreadConstraints:
-    type: string
+    type: array
+    default: []
+    title: The topologySpreadConstraints Schema
+    items: {}
+    examples:
+    - []
+  podDisruptionBudget:
+    type: object
+    default: {}
+    title: The podDisruptionBudget Schema
+    required: []
+    properties: {}
+    examples:
+    - {}
+  probes:
+    type: object
+    default: {}
+    title: The probes Schema
+    required:
+    - readiness
+    - liveness
+    - startup
+    properties:
+      readiness:
+        type: object
+        default: {}
+        title: The readiness Schema
+        required:
+        - initialDelaySeconds
+        - timeoutSeconds
+        - failureThreshold
+        - successThreshold
+        - periodSeconds
+        properties:
+          initialDelaySeconds:
+            type: integer
+            default: 0
+            title: The initialDelaySeconds Schema
+            examples:
+            - 1
+          timeoutSeconds:
+            type: integer
+            default: 0
+            title: The timeoutSeconds Schema
+            examples:
+            - 5
+          failureThreshold:
+            type: integer
+            default: 0
+            title: The failureThreshold Schema
+            examples:
+            - 3
+          successThreshold:
+            type: integer
+            default: 0
+            title: The successThreshold Schema
+            examples:
+            - 1
+          periodSeconds:
+            type: integer
+            default: 0
+            title: The periodSeconds Schema
+            examples:
+            - 10
+        examples:
+        - initialDelaySeconds: 1
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+          periodSeconds: 10
+      liveness:
+        type: object
+        default: {}
+        title: The liveness Schema
+        required:
+        - initialDelaySeconds
+        - timeoutSeconds
+        - failureThreshold
+        - successThreshold
+        - periodSeconds
+        properties:
+          initialDelaySeconds:
+            type: integer
+            default: 0
+            title: The initialDelaySeconds Schema
+            examples:
+            - 1
+          timeoutSeconds:
+            type: integer
+            default: 0
+            title: The timeoutSeconds Schema
+            examples:
+            - 5
+          failureThreshold:
+            type: integer
+            default: 0
+            title: The failureThreshold Schema
+            examples:
+            - 3
+          successThreshold:
+            type: integer
+            default: 0
+            title: The successThreshold Schema
+            examples:
+            - 1
+          periodSeconds:
+            type: integer
+            default: 0
+            title: The periodSeconds Schema
+            examples:
+            - 10
+        examples:
+        - initialDelaySeconds: 1
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+          periodSeconds: 10
+      startup:
+        type: object
+        default: {}
+        title: The startup Schema
+        required:
+        - enable
+        - initialDelaySeconds
+        - timeoutSeconds
+        - failureThreshold
+        - successThreshold
+        - periodSeconds
+        properties:
+          enable:
+            type: boolean
+            default: false
+            title: The enable Schema
+            examples:
+            - false
+          initialDelaySeconds:
+            type: integer
+            default: 0
+            title: The initialDelaySeconds Schema
+            examples:
+            - 10
+          timeoutSeconds:
+            type: integer
+            default: 0
+            title: The timeoutSeconds Schema
+            examples:
+            - 5
+          failureThreshold:
+            type: integer
+            default: 0
+            title: The failureThreshold Schema
+            examples:
+            - 20
+          successThreshold:
+            type: integer
+            default: 0
+            title: The successThreshold Schema
+            examples:
+            - 1
+          periodSeconds:
+            type: integer
+            default: 0
+            title: The periodSeconds Schema
+            examples:
+            - 10
+        examples:
+        - enable: false
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 20
+          successThreshold: 1
+          periodSeconds: 10
+    examples:
+    - readiness:
+        initialDelaySeconds: 1
+        timeoutSeconds: 5
+        failureThreshold: 3
+        successThreshold: 1
+        periodSeconds: 10
+      liveness:
+        initialDelaySeconds: 1
+        timeoutSeconds: 5
+        failureThreshold: 3
+        successThreshold: 1
+        periodSeconds: 10
+      startup:
+        enable: false
+        initialDelaySeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 20
+        successThreshold: 1
+        periodSeconds: 10
+examples:
+- replicaCount: 1
+  logLevel: info
+  host: 
+  backend: 
+  backends: []
+  image:
+    repository: ghcr.io/stefanprodan/podinfo
+    tag: 6.7.1
+    pullPolicy: IfNotPresent
+  ui:
+    color: "#34577c"
+    message: ''
+    logo: ''
+  faults:
+    delay: false
+    error: false
+    unhealthy: false
+    unready: false
+    testFail: false
+    testTimeout: false
+  service:
+    enabled: true
+    annotations: {}
+    type: ClusterIP
+    metricsPort: 9797
+    httpPort: 9898
+    externalPort: 9898
+    grpcPort: 9999
+    grpcService: podinfo
+    nodePort: 31198
+    hostPort: 
+  h2c:
+    enabled: false
+  config:
+    path: ''
+    name: ''
+  extraArgs: []
+  tls:
+    enabled: false
+    secretName: 
+    certPath: "/data/cert"
+    port: 9899
+    hostPort: 
+  certificate:
+    create: false
+    issuerRef:
+      kind: ClusterIssuer
+      name: self-signed
+    dnsNames:
+    - podinfo
+  hpa:
+    enabled: false
+    maxReplicas: 10
+    cpu: 
+    memory: 
+    requests: 
+  cache: ''
+  redis:
+    enabled: false
+    repository: redis
+    tag: 7.0.7
+  serviceAccount:
+    enabled: false
+    name: 
+    imagePullSecrets: []
+  securityContext: {}
+  ingress:
+    enabled: false
+    className: ''
+    additionalLabels: {}
+    annotations: {}
+    hosts:
+    - host: podinfo.local
+      paths:
+      - path: "/"
+        pathType: ImplementationSpecific
+    tls: []
+  linkerd:
+    profile:
+      enabled: false
+  serviceMonitor:
+    enabled: false
+    interval: 15s
+    additionalLabels: {}
+  resources:
+    limits: 
+    requests:
+      cpu: 1m
+      memory: 16Mi
+  extraEnvs: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  topologySpreadConstraints: []
+  podDisruptionBudget: {}
+  probes:
+    readiness:
+      initialDelaySeconds: 1
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+      periodSeconds: 10
+    liveness:
+      initialDelaySeconds: 1
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+      periodSeconds: 10
+    startup:
+      enable: false
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 20
+      successThreshold: 1
+      periodSeconds: 10

@@ -1,0 +1,20 @@
+1. Get the application URL by running these commands:
+{{- if .Values.acceptance-test.ingress.enabled }}
+{{- range $host := .Values.acceptance-test.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.acceptance-test.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.acceptance-test.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ template "podinfo.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.acceptance-test.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get svc -w {{ template "podinfo.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "podinfo.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo http://$SERVICE_IP:{{ .Values.acceptance-test.service.externalPort }}
+{{- else if contains "ClusterIP" .Values.acceptance-test.service.type }}
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl -n {{ .Release.Namespace }} port-forward deploy/{{ template "podinfo.fullname" . }} 8080:{{ .Values.acceptance-test.service.externalPort }}
+{{- end }}

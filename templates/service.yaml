@@ -1,14 +1,36 @@
+{{- if .Values.acceptance-test.service.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: hello-world
-  namespace: test-ext-modules
-  {{- include "helm_lib_module_labels" (list . (dict "app" "hello-world")) | nindent 2 }}
+  name: {{ template "podinfo.fullname" . }}
+  labels:
+    {{- include "podinfo.labels" . | nindent 4 }}
+{{- with .Values.acceptance-test.service.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
+  type: {{ .Values.acceptance-test.service.type }}
   ports:
-  - port: 8080
-    targetPort: http
-    protocol: TCP
-    name: http
+    - port: {{ .Values.acceptance-test.service.externalPort }}
+      targetPort: http
+      protocol: TCP
+      name: http
+      {{- if (and (eq .Values.acceptance-test.service.type "NodePort") (not (empty .Values.acceptance-test.service.nodePort))) }}
+      nodePort: {{ .Values.acceptance-test.service.nodePort }}
+      {{- end }}
+    {{- if .Values.acceptance-test.tls.enabled }}
+    - port: {{ .Values.acceptance-test.tls.port | default 9899 }}
+      targetPort: https
+      protocol: TCP
+      name: https
+    {{- end }}
+    {{- if .Values.acceptance-test.service.grpcPort }}
+    - port: {{ .Values.acceptance-test.service.grpcPort }}
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+    {{- end }}
   selector:
-    {{- include "hello-world.selectorLabels" . | nindent 4 }}
+    {{- include "podinfo.selectorLabels" . | nindent 4 }}
+{{- end }}

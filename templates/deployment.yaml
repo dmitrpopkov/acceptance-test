@@ -1,36 +1,221 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello-world
-  namespace: test-ext-modules
-  {{- include "helm_lib_module_labels" (list . (dict "app" "hello-world")) | nindent 2 }}
+  name: {{ template "podinfo.fullname" . }}
+  labels:
+    {{- include "podinfo.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  {{- if not .Values.acceptance-test.hpa.enabled }}
+  replicas: {{ .Values.acceptance-test.replicaCount }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
   selector:
     matchLabels:
-      {{- include "hello-world.selectorLabels" . | nindent 6 }}
+      {{- include "podinfo.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "hello-world.labels" . | nindent 8 }}
+        {{- include "podinfo.selectorLabels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.acceptance-test.service.httpPort }}"
+        {{- range $key, $value := .Values.acceptance-test.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
     spec:
-      imagePullSecrets:
-        - name: registrysecret
+      terminationGracePeriodSeconds: 30
+      {{- if .Values.acceptance-test.serviceAccount.enabled }}
+      serviceAccountName: {{ template "podinfo.serviceAccountName" . }}
+      {{- end }}
       containers:
-      - name: {{ .Chart.Name }}
-        image: {{ include "helm_lib_module_image" (list . "helloWorld") }}
-        ports:
-        - name: http
-          containerPort: 8080
-          protocol: TCP
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: http
-        readinessProbe:
-          httpGet:
-            path: /healthz
-            port: http
-        resources:
-          {{- toYaml .Values.helloWorld.resources | nindent 10 }}
-
+        - name: {{ .Chart.Name }}
+          image: "{{ include "helm_lib_module_image" (list . "acceptance-test") }}"
+          imagePullPolicy: {{ .Values.acceptance-test.image.pullPolicy }}
+          {{- if .Values.acceptance-test.securityContext }}
+          securityContext:
+            {{- toYaml .Values.acceptance-test.securityContext | nindent 12 }}
+          {{- else if (or .Values.acceptance-test.service.hostPort .Values.acceptance-test.tls.hostPort) }}
+          securityContext:
+            allowPrivilegeEscalation: true
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
+          {{- end }}
+          command:
+            - ./podinfo
+            - --port={{ .Values.acceptance-test.service.httpPort | default 9898 }}
+            {{- if .Values.acceptance-test.host }}
+            - --host={{ .Values.acceptance-test.host }}
+            {{- end }}
+            {{- if .Values.acceptance-test.tls.enabled }}
+            - --secure-port={{ .Values.acceptance-test.tls.port }}
+            {{- end }}
+            {{- if .Values.acceptance-test.tls.certPath }}
+            - --cert-path={{ .Values.acceptance-test.tls.certPath }}
+            {{- end }}
+            {{- if .Values.acceptance-test.service.metricsPort }}
+            - --port-metrics={{ .Values.acceptance-test.service.metricsPort }}
+            {{- end }}
+            {{- if .Values.acceptance-test.service.grpcPort }}
+            - --grpc-port={{ .Values.acceptance-test.service.grpcPort }}
+            {{- end }}
+            {{- if .Values.acceptance-test.service.grpcService }}
+            - --grpc-service-name={{ .Values.acceptance-test.service.grpcService }}
+            {{- end }}
+            {{- range .Values.acceptance-test.backends }}
+            - --backend-url={{ . }}
+            {{- end }}
+            {{- if .Values.acceptance-test.cache }}
+            - --cache-server={{ .Values.acceptance-test.cache }}
+            {{- else if .Values.acceptance-test.redis.enabled }}
+            - --cache-server=tcp://{{ template "podinfo.fullname" . }}-redis:6379
+            {{- end }}
+            - --level={{ .Values.acceptance-test.logLevel }}
+            - --random-delay={{ .Values.acceptance-test.faults.delay }}
+            - --random-error={{ .Values.acceptance-test.faults.error }}
+            {{- if .Values.acceptance-test.faults.unhealthy }}
+            - --unhealthy
+            {{- end }}
+            {{- if .Values.acceptance-test.faults.unready }}
+            - --unready
+            {{- end }}
+            {{- if .Values.acceptance-test.h2c.enabled }}
+            - --h2c
+            {{- end }}
+            {{- with .Values.acceptance-test.config.path }}
+            - --config-path={{ . }}
+            {{- end }}
+            {{- with .Values.acceptance-test.config.name }}
+            - --config={{ . }}
+            {{- end }}
+            {{- with .Values.acceptance-test.extraArgs }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          env:
+          {{- if .Values.acceptance-test.ui.message }}
+          - name: PODINFO_UI_MESSAGE
+            value: {{ quote .Values.acceptance-test.ui.message }}
+          {{- end }}
+          {{- if .Values.acceptance-test.ui.logo }}
+          - name: PODINFO_UI_LOGO
+            value: {{ .Values.acceptance-test.ui.logo }}
+          {{- end }}
+          {{- if .Values.acceptance-test.ui.color }}
+          - name: PODINFO_UI_COLOR
+            value: {{ quote .Values.acceptance-test.ui.color }}
+          {{- end }}
+          {{- if .Values.acceptance-test.backend }}
+          - name: PODINFO_BACKEND_URL
+            value: {{ .Values.acceptance-test.backend }}
+          {{- end }}
+          {{- if .Values.acceptance-test.extraEnvs }}
+{{ toYaml .Values.acceptance-test.extraEnvs | indent 10 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.acceptance-test.service.httpPort | default 9898 }}
+              protocol: TCP
+              {{- if .Values.acceptance-test.service.hostPort }}
+              hostPort: {{ .Values.acceptance-test.service.hostPort }}
+              {{- end }}
+            {{- if .Values.acceptance-test.tls.enabled }}
+            - name: https
+              containerPort: {{ .Values.acceptance-test.tls.port | default 9899 }}
+              protocol: TCP
+              {{- if .Values.acceptance-test.tls.hostPort }}
+              hostPort: {{ .Values.acceptance-test.tls.hostPort }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.acceptance-test.service.metricsPort }}
+            - name: http-metrics
+              containerPort: {{ .Values.acceptance-test.service.metricsPort }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.acceptance-test.service.grpcPort }}
+            - name: grpc
+              containerPort: {{ .Values.acceptance-test.service.grpcPort }}
+              protocol: TCP
+            {{- end }}
+          {{- if .Values.acceptance-test.probes.startup.enable }}
+          startupProbe:
+            exec:
+              command:
+              - podcli
+              - check
+              - http
+              - localhost:{{ .Values.acceptance-test.service.httpPort | default 9898 }}/healthz
+            {{- with .Values.acceptance-test.probes.startup }}
+            initialDelaySeconds: {{ .initialDelaySeconds | default 1 }}
+            timeoutSeconds: {{ .timeoutSeconds | default 5 }}
+            failureThreshold: {{ .failureThreshold | default 3 }}
+            successThreshold: {{ .successThreshold | default 1 }}
+            periodSeconds: {{ .periodSeconds | default 10 }}
+            {{- end }}
+            {{- end }}
+          livenessProbe:
+            exec:
+              command:
+              - podcli
+              - check
+              - http
+              - localhost:{{ .Values.acceptance-test.service.httpPort | default 9898 }}/healthz
+            {{- with .Values.acceptance-test.probes.liveness }}
+            initialDelaySeconds: {{ .initialDelaySeconds | default 1 }}
+            timeoutSeconds: {{ .timeoutSeconds | default 5 }}
+            failureThreshold: {{ .failureThreshold | default 3 }}
+            successThreshold: {{ .successThreshold | default 1 }}
+            periodSeconds: {{ .periodSeconds | default 10 }}
+            {{- end }}
+          readinessProbe:
+            exec:
+              command:
+              - podcli
+              - check
+              - http
+              - localhost:{{ .Values.acceptance-test.service.httpPort | default 9898 }}/readyz
+            {{- with .Values.acceptance-test.probes.readiness }}
+            initialDelaySeconds: {{ .initialDelaySeconds | default 1 }}
+            timeoutSeconds: {{ .timeoutSeconds | default 5 }}
+            failureThreshold: {{ .failureThreshold | default 3 }}
+            successThreshold: {{ .successThreshold | default 1 }}
+            periodSeconds: {{ .periodSeconds | default 10 }}
+            {{- end }}
+          volumeMounts:
+          - name: data
+            mountPath: /data
+          {{- if .Values.acceptance-test.tls.enabled }}
+          - name: tls
+            mountPath: {{ .Values.acceptance-test.tls.certPath | default "/data/cert" }}
+            readOnly: true
+          {{- end }}
+          resources:
+{{ toYaml .Values.acceptance-test.resources | indent 12 }}
+    {{- with .Values.acceptance-test.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.acceptance-test.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.acceptance-test.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+      - name: data
+        emptyDir: {}
+      {{- if .Values.acceptance-test.tls.enabled }}
+      - name: tls
+        secret:
+          secretName: {{ template "podinfo.tlsSecretName" . }}
+      {{- end }}
+    {{- with .Values.acceptance-test.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{- toYaml . | nindent 8 }}
+    {{- end }}

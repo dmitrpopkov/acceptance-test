@@ -1,4 +1,4 @@
-name: hello-world
+name: acceptance-test
 version: 0.0.1
 dependencies:
   - name: deckhouse_lib_helm

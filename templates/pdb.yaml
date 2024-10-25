@@ -1,0 +1,14 @@
+{{- if and .Values.acceptance-test.podDisruptionBudget (gt (int .Values.acceptance-test.replicaCount) 1) }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "podinfo.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "podinfo.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "podinfo.selectorLabels" . | nindent 6 }}
+  {{- toYaml .Values.acceptance-test.podDisruptionBudget | nindent 2 }}
+{{- end }}

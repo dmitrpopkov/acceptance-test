@@ -1,8 +1,8 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "hello-world.name" -}}
-{{- default .Chart.Name .Values.helloWorld.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- define "podinfo.name" -}}
+{{- default .Chart.Name .Values.acceptance-test.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -10,11 +10,11 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "hello-world.fullname" -}}
-{{- if .Values.helloWorld.fullnameOverride }}
-{{- .Values.helloWorld.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- define "podinfo.fullname" -}}
+{{- if .Values.acceptance-test.fullnameOverride }}
+{{- .Values.acceptance-test.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name .Values.helloWorld.nameOverride }}
+{{- $name := default .Chart.Name .Values.acceptance-test.nameOverride }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,39 +26,44 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "hello-world.chart" -}}
+{{- define "podinfo.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "hello-world.labels" -}}
-helm.sh/chart: {{ include "hello-world.chart" . }}
-{{ include "hello-world.selectorLabels" . }}
+{{- define "podinfo.labels" -}}
+helm.sh/chart: {{ include "podinfo.chart" . }}
+{{ include "podinfo.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-giantswarm.io/service-type: managed
-application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantswarm.io/team" | quote }}
 {{- end }}
 
 {{/*
 Selector labels
 */}}
-{{- define "hello-world.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "hello-world.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+{{- define "podinfo.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "podinfo.fullname" . }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "hello-world.serviceAccountName" -}}
-{{- if .Values.helloWorld.serviceAccount.create }}
-{{- default (include "hello-world.fullname" .) .Values.helloWorld.serviceAccount.name }}
+{{- define "podinfo.serviceAccountName" -}}
+{{- if .Values.acceptance-test.serviceAccount.enabled }}
+{{- default (include "podinfo.fullname" .) .Values.acceptance-test.serviceAccount.name }}
 {{- else }}
-{{- default "default" .Values.helloWorld.serviceAccount.name }}
+{{- default "default" .Values.acceptance-test.serviceAccount.name }}
 {{- end }}
+{{- end }}
+
+{{/*
+Create the name of the tls secret for secure port
+*/}}
+{{- define "podinfo.tlsSecretName" -}}
+{{- $fullname := include "podinfo.fullname" . -}}
+{{- default (printf "%s-tls" $fullname) .Values.acceptance-test.tls.secretName }}
 {{- end }}
